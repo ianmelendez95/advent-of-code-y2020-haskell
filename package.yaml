@@ -24,6 +24,9 @@ dependencies:
 
 library:
   source-dirs: src
+  dependencies: 
+  - array
+  - text
 
 executables:
   advent-of-code-y2020-haskell-exe:
