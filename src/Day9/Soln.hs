@@ -14,6 +14,11 @@ import Debug.Trace
 import Data.Sequence (Seq((:<|)))
 import qualified Data.Sequence as Seq
 
+-- solutions
+
+soln :: IO Int 
+soln = findCorruptNum <$> readXMAS
+
 -- input
 
 readXMAS :: IO [Int]
