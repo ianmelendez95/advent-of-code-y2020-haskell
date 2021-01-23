@@ -90,3 +90,40 @@ showUniverse universe = showZs cubePoints
                      xyPoints = map (,yPoints) xPoints
                      zxhPoints = map (,xyPoints) zPoints
                   in zxhPoints
+
+-- next universe
+
+neighbors :: Point -> [Point]
+neighbors (x,y,z) = [(x',y',z') | x' <- [(x-1)..(x+1)],
+                                  y' <- [(y-1)..(y+1)],
+                                  z' <- [(z-1)..(z+1)],
+                                  (x /= x') || (y /= y') || (z /= z')]
+
+-- | 'Region' about a point is the points and all neighboring points
+-- | region of a universe is then all universe points and neighboring points therein
+nextPossibleRegion :: Universe -> Universe
+nextPossibleRegion = foldr insertRegion Set.empty
+  where 
+    insertRegion :: Point -> Universe -> Universe 
+    insertRegion p = Set.union (Set.fromList (p : neighbors p)) 
+
+pointSurvives :: Universe -> Point -> Bool
+pointSurvives universe point 
+  | pointActive universe point = activeNeighbors == 2 || activeNeighbors == 3
+  | otherwise                  = activeNeighbors == 3 
+  where 
+    activeNeighbors = length $ filter (pointActive universe) (neighbors point)
+                               
+
+nextUniverse :: Universe -> Universe 
+nextUniverse universe = let nextRegion = nextPossibleRegion universe 
+                         in Set.filter (pointSurvives universe) nextRegion
+
+cycleUniverse :: Int -> Universe -> Universe
+cycleUniverse cycles start_universe = iterate nextUniverse start_universe !! cycles
+
+printUniverse :: Universe -> IO ()
+printUniverse uni = putStrLn (showUniverse uni)
+
+doUniverse :: (Universe -> IO ()) -> IO ()
+doUniverse f = readUniverse >>= f
