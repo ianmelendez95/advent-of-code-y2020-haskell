@@ -27,6 +27,7 @@ library:
   dependencies: 
   - array
   - text
+  - containers
 
 executables:
   advent-of-code-y2020-haskell-exe:
