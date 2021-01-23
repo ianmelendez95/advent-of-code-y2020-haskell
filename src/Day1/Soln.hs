@@ -10,13 +10,6 @@ import qualified Data.Text.IO as TIO
 
 import Debug.Trace
 
--- solution
-
-inputFile = "src/Day17/full-input.txt"
-
-soln :: IO Int
-soln = Set.size . cycleUniverse 6 <$> readUniverse
-
 -- input
 
 readLines :: IO [T.Text]

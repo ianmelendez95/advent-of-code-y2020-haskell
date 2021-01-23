@@ -14,9 +14,9 @@ import Data.Ord
 
 import Debug.Trace
 
-type Point = (Int, Int, Int)
+type Point = (Int, Int, Int, Int)
 type Universe = Set Point
-type Bounds = ((Int,Int,Int),(Int,Int,Int))
+type Bounds = ((Int,Int,Int,Int),(Int,Int,Int,Int))
 
 -- solution
 
@@ -52,43 +52,46 @@ readUniverse = do lines <- map T.unpack . T.splitOn "\n" <$> TIO.readFile inputF
                           
                           xycoords :: [(Int,Int)]
                           xycoords = concat $ zipWith (\x ys -> map (x,) ys) [0..] ycoords
-                       in map (\(x,y) -> (x,y,0)) xycoords
+                       in map (\(x,y) -> (x,y,0,0)) xycoords
 
 -- show
 
 showUniverse :: Universe -> String
-showUniverse universe = showZs cubePoints
+showUniverse universe = showWs cubePoints
   where
-    bounds = universeBounds universe
-
     showPoint' :: Point -> Char
     showPoint' = showPoint universe 
 
-    showYs :: Int -> Int -> [Int] -> String 
-    showYs z x ys = map (\y -> showPoint' (x,y,z)) ys
+    showYPoints :: Int -> Int -> Int -> [Int] -> String 
+    showYPoints w z x ys = map (\y -> showPoint' (x,y,z,w)) ys
 
-    showXs :: Int -> [(Int,[Int])] -> String 
-    showXs z xys = unlines $ map (uncurry (showYs z)) xys
+    showXVector :: Int -> Int -> [(Int,[Int])] -> String 
+    showXVector w z xys = unlines $ map (uncurry (showYPoints w z)) xys
 
-    showZLayer :: (Int,[(Int,[Int])]) -> String 
-    showZLayer (z,xys) = "Z=" ++ show z ++ "\n" ++ showXs z xys
+    showZLayer :: Int -> (Int,[(Int,[Int])]) -> String 
+    showZLayer w (z,xys) = "Z=" ++ show z ++ " W=" ++ show w ++ "\n" ++ showXVector w z xys ++ "\n"
 
-    showZs :: [(Int,[(Int,[Int])])] -> String
-    showZs = unlines . map showZLayer
+    showWLayer :: (Int,[(Int,[(Int,[Int])])]) -> String 
+    showWLayer (w, zxys) = unlines $ map (showZLayer w) zxys
+
+    showWs :: [(Int,[(Int,[(Int,[Int])])])] -> String
+    showWs = unlines . map showWLayer
 
     -- | cube points structured for printing 
     -- |   e.g. each top level tuple is z to the relative xy points
     -- |        and second level tuples are x to relevant ys
     -- |        thus the top level tuple contains information for the next set of lines
     -- |        and each second level tuple contains information for the given line
-    cubePoints :: [(Int,[(Int,[Int])])]
-    cubePoints = let ((minx, miny, minz), (maxx, maxy, maxz)) = bounds
+    cubePoints :: [(Int,[(Int,[(Int,[Int])])])]
+    cubePoints = let ((minx, miny, minz, minw), (maxx, maxy, maxz, maxw)) = universeBounds universe
+                     wPoints = [minw..maxw]
                      zPoints = [minz..maxz]
                      yPoints = [miny..maxy]
                      xPoints = [minx..maxx]
                      xyPoints = map (,yPoints) xPoints
-                     zxhPoints = map (,xyPoints) zPoints
-                  in zxhPoints
+                     zxyPoints = map (,xyPoints) zPoints
+                     wzxyPoints = map (,zxyPoints) wPoints
+                  in wzxyPoints
 
 
 pointActive :: Universe -> Point -> Bool
@@ -104,8 +107,8 @@ universeBounds universe = Set.foldr updateBounds initial universe
     initial = let p = Set.findMin universe in (p, p)
 
     updateBounds :: Point -> Bounds -> Bounds
-    updateBounds (x,y,z) ((minx,miny,minz),(maxx,maxy,maxz)) = 
-      ((min x minx, min y miny, min z minz), (max x maxx, max y maxy, max z maxz))
+    updateBounds (x,y,z,w) ((minx,miny,minz,minw),(maxx,maxy,maxz,maxw)) = 
+      ((min x minx, min y miny, min z minz, min w minw), (max x maxx, max y maxy, max z maxz, max w maxw))
 
 -- cycle universe
 
@@ -113,10 +116,11 @@ cycleUniverse :: Int -> Universe -> Universe
 cycleUniverse cycles start_universe = iterate nextUniverse start_universe !! cycles
 
 neighbors :: Point -> [Point]
-neighbors (x,y,z) = [(x',y',z') | x' <- [(x-1)..(x+1)],
-                                  y' <- [(y-1)..(y+1)],
-                                  z' <- [(z-1)..(z+1)],
-                                  (x /= x') || (y /= y') || (z /= z')]
+neighbors (x,y,z,w) = [(x',y',z',w') | x' <- [(x-1)..(x+1)],
+                                       y' <- [(y-1)..(y+1)],
+                                       z' <- [(z-1)..(z+1)],
+                                       w' <- [(w-1)..(w+1)],
+                                       (x /= x') || (y /= y') || (z /= z') || (w /= w')]
 
 -- | 'Region' about a point is the points and all neighboring points
 -- | region of a universe is then all universe points and neighboring points therein
@@ -132,7 +136,6 @@ pointSurvives universe point
   | otherwise                  = activeNeighbors == 3 
   where 
     activeNeighbors = length $ filter (pointActive universe) (neighbors point)
-                               
 
 nextUniverse :: Universe -> Universe 
 nextUniverse universe = let nextRegion = nextPossibleRegion universe 
