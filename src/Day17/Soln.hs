@@ -18,6 +18,22 @@ type Point = (Int, Int, Int)
 type Universe = Set Point
 type Bounds = ((Int,Int,Int),(Int,Int,Int))
 
+-- solution
+
+soln :: IO Int
+soln = Set.size . cycleUniverse 6 <$> readUniverse
+
+inputFile :: FilePath
+inputFile = "src/Day17/full-input.txt"
+
+-- IO helpers
+
+printUniverse :: Universe -> IO ()
+printUniverse uni = putStrLn (showUniverse uni)
+
+doUniverse :: (Universe -> IO ()) -> IO ()
+doUniverse f = readUniverse >>= f
+
 -- read input
 
 readUniverse :: IO Universe
@@ -39,23 +55,6 @@ readUniverse = do lines <- map T.unpack . T.splitOn "\n" <$> TIO.readFile inputF
                        in map (\(x,y) -> (x,y,0)) xycoords
 
 -- show
-
-pointActive :: Universe -> Point -> Bool
-pointActive = flip Set.member
-
-showPoint :: Universe -> Point -> Char
-showPoint univ point = if pointActive univ point then '#' else '.'
-
-universeBounds :: Universe -> Bounds
-universeBounds universe = Set.foldr updateBounds initial universe
-  where 
-    initial :: Bounds 
-    initial = let p = Set.findMin universe in (p, p)
-
-    updateBounds :: Point -> Bounds -> Bounds
-    updateBounds (x,y,z) ((minx,miny,minz),(maxx,maxy,maxz)) = 
-      ((min x minx, min y miny, min z minz), (max x maxx, max y maxy, max z maxz))
-         
 
 showUniverse :: Universe -> String
 showUniverse universe = showZs cubePoints
@@ -91,7 +90,27 @@ showUniverse universe = showZs cubePoints
                      zxhPoints = map (,xyPoints) zPoints
                   in zxhPoints
 
+
+pointActive :: Universe -> Point -> Bool
+pointActive = flip Set.member
+
+showPoint :: Universe -> Point -> Char
+showPoint univ point = if pointActive univ point then '#' else '.'
+
+universeBounds :: Universe -> Bounds
+universeBounds universe = Set.foldr updateBounds initial universe
+  where 
+    initial :: Bounds 
+    initial = let p = Set.findMin universe in (p, p)
+
+    updateBounds :: Point -> Bounds -> Bounds
+    updateBounds (x,y,z) ((minx,miny,minz),(maxx,maxy,maxz)) = 
+      ((min x minx, min y miny, min z minz), (max x maxx, max y maxy, max z maxz))
+
 -- cycle universe
+
+cycleUniverse :: Int -> Universe -> Universe
+cycleUniverse cycles start_universe = iterate nextUniverse start_universe !! cycles
 
 neighbors :: Point -> [Point]
 neighbors (x,y,z) = [(x',y',z') | x' <- [(x-1)..(x+1)],
@@ -118,21 +137,3 @@ pointSurvives universe point
 nextUniverse :: Universe -> Universe 
 nextUniverse universe = let nextRegion = nextPossibleRegion universe 
                          in Set.filter (pointSurvives universe) nextRegion
-
-cycleUniverse :: Int -> Universe -> Universe
-cycleUniverse cycles start_universe = iterate nextUniverse start_universe !! cycles
-
--- IO helpers
-
-printUniverse :: Universe -> IO ()
-printUniverse uni = putStrLn (showUniverse uni)
-
-doUniverse :: (Universe -> IO ()) -> IO ()
-doUniverse f = readUniverse >>= f
-
--- solution
-
-inputFile = "src/Day17/full-input.txt"
-
-soln :: IO Int
-soln = Set.size . cycleUniverse 6 <$> readUniverse
