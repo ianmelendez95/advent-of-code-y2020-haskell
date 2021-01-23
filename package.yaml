@@ -28,6 +28,7 @@ library:
   - array
   - text
   - containers
+  - sort
 
 executables:
   advent-of-code-y2020-haskell-exe:

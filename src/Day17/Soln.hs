@@ -3,16 +3,22 @@
 
 module Day17.Soln where
 
+import Data.List
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-
 import Data.Set (Set)
 import qualified Data.Set as Set
+
+import Data.Sort
+import Data.Ord
 
 import Debug.Trace
 
 type Point = (Int, Int, Int)
 type Universe = Set Point
+type Bounds = ((Int,Int,Int),(Int,Int,Int))
+
+-- read input
 
 readUniverse :: IO Universe
 readUniverse = do lines <- map T.unpack . T.splitOn "\n" <$> TIO.readFile "src/Day17/short-input.txt"
@@ -31,3 +37,56 @@ readUniverse = do lines <- map T.unpack . T.splitOn "\n" <$> TIO.readFile "src/D
                           xycoords :: [(Int,Int)]
                           xycoords = concat $ zipWith (\x ys -> map (x,) ys) [0..] ycoords
                        in map (\(x,y) -> (x,y,0)) xycoords
+
+-- show
+
+pointActive :: Universe -> Point -> Bool
+pointActive = flip Set.member
+
+showPoint :: Universe -> Point -> Char
+showPoint univ point = if pointActive univ point then '#' else '.'
+
+universeBounds :: Universe -> Bounds
+universeBounds universe = Set.foldr updateBounds initial universe
+  where 
+    initial :: Bounds 
+    initial = let p = Set.findMin universe in (p, p)
+
+    updateBounds :: Point -> Bounds -> Bounds
+    updateBounds (x,y,z) ((minx,miny,minz),(maxx,maxy,maxz)) = 
+      ((min x minx, min y miny, min z minz), (max x maxx, max y maxy, max z maxz))
+         
+
+showUniverse :: Universe -> String
+showUniverse universe = showZs cubePoints
+  where
+    bounds = universeBounds universe
+
+    showPoint' :: Point -> Char
+    showPoint' = showPoint universe 
+
+    showYs :: Int -> Int -> [Int] -> String 
+    showYs z x ys = map (\y -> showPoint' (x,y,z)) ys
+
+    showXs :: Int -> [(Int,[Int])] -> String 
+    showXs z xys = unlines $ map (uncurry (showYs z)) xys
+
+    showZLayer :: (Int,[(Int,[Int])]) -> String 
+    showZLayer (z,xys) = "Z=" ++ show z ++ "\n" ++ showXs z xys
+
+    showZs :: [(Int,[(Int,[Int])])] -> String
+    showZs = unlines . map showZLayer
+
+    -- | cube points structured for printing 
+    -- |   e.g. each top level tuple is z to the relative xy points
+    -- |        and second level tuples are x to relevant ys
+    -- |        thus the top level tuple contains information for the next set of lines
+    -- |        and each second level tuple contains information for the given line
+    cubePoints :: [(Int,[(Int,[Int])])]
+    cubePoints = let ((minx, miny, minz), (maxx, maxy, maxz)) = bounds
+                     zPoints = [minz..maxz]
+                     yPoints = [miny..maxy]
+                     xPoints = [minx..maxx]
+                     xyPoints = map (,yPoints) xPoints
+                     zxhPoints = map (,xyPoints) zPoints
+                  in zxhPoints
