@@ -21,7 +21,7 @@ type Bounds = ((Int,Int,Int),(Int,Int,Int))
 -- read input
 
 readUniverse :: IO Universe
-readUniverse = do lines <- map T.unpack . T.splitOn "\n" <$> TIO.readFile "src/Day17/short-input.txt"
+readUniverse = do lines <- map T.unpack . T.splitOn "\n" <$> TIO.readFile inputFile
                   return $ Set.fromList (readLines lines)
   where 
     -- | returns active y coordinates
@@ -91,7 +91,7 @@ showUniverse universe = showZs cubePoints
                      zxhPoints = map (,xyPoints) zPoints
                   in zxhPoints
 
--- next universe
+-- cycle universe
 
 neighbors :: Point -> [Point]
 neighbors (x,y,z) = [(x',y',z') | x' <- [(x-1)..(x+1)],
@@ -122,8 +122,17 @@ nextUniverse universe = let nextRegion = nextPossibleRegion universe
 cycleUniverse :: Int -> Universe -> Universe
 cycleUniverse cycles start_universe = iterate nextUniverse start_universe !! cycles
 
+-- IO helpers
+
 printUniverse :: Universe -> IO ()
 printUniverse uni = putStrLn (showUniverse uni)
 
 doUniverse :: (Universe -> IO ()) -> IO ()
 doUniverse f = readUniverse >>= f
+
+-- solution
+
+inputFile = "src/Day17/full-input.txt"
+
+soln :: IO Int
+soln = Set.size . cycleUniverse 6 <$> readUniverse
