@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 876e65d4575a614092dbdf86c9078438bac272cac86be23d9dc9bf651864d068
+-- hash: 7b4f927d5d621d3e7afbbfc5a7d5228454f000902ea9e9b0f751785f2896b589
 
 name:           advent-of-code-y2020-haskell
 version:        0.1.0.0
@@ -27,9 +27,9 @@ source-repository head
 
 library
   exposed-modules:
-      Day1.Soln
-      Day2.Soln
       Lib
+      Y2019.Day1.Soln
+      Y2019.Day2.Soln
   other-modules:
       Paths_advent_of_code_y2020_haskell
   hs-source-dirs:

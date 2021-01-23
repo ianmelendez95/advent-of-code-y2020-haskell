@@ -1,4 +1,4 @@
-module Day1.Soln where
+module Y2019.Day1.Soln where
 
 readMasses :: IO [Int]
 readMasses = map (read :: String -> Int) . lines <$> readFile "src/Day1/full-input.txt"
