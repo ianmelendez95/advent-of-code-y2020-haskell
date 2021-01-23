@@ -31,7 +31,7 @@ library:
   - sort
 
 executables:
-  advent-of-code-y2020-haskell-exe:
+  aoc:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -42,7 +42,7 @@ executables:
     - advent-of-code-y2020-haskell
 
 tests:
-  advent-of-code-y2020-haskell-test:
+  aoc-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:

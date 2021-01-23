@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3cdb334f3df995ff4f94e5cbcdda0a1cf814081472c7d58c0d8528063330b0ec
+-- hash: 643c6290064d69d7f234c47537bbc188472358d8a9205b859f0eff2a2a755bed
 
 name:           advent-of-code-y2020-haskell
 version:        0.1.0.0
@@ -44,7 +44,7 @@ library
     , text
   default-language: Haskell2010
 
-executable advent-of-code-y2020-haskell-exe
+executable aoc
   main-is: Main.hs
   other-modules:
       Paths_advent_of_code_y2020_haskell
@@ -56,7 +56,7 @@ executable advent-of-code-y2020-haskell-exe
     , base >=4.7 && <5
   default-language: Haskell2010
 
-test-suite advent-of-code-y2020-haskell-test
+test-suite aoc-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
