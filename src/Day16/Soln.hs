@@ -15,12 +15,17 @@ import Data.Functor
 
 import Data.Char
 
+import Debug.Trace
+
 type Parser = Parsec Void Text
 
 ---- soln
 
 soln16 :: IO Int 
-soln16 = sum . findInvalidValues <$> readTicketInfo
+soln16 = do validTicketInfo <- filterValidTickets <$> readTicketInfo
+            print $ labelsForCol validTicketInfo
+            return 0
+-- soln16 = sum . findInvalidValues <$> readTicketInfo
 
 ---- input
 
@@ -33,19 +38,46 @@ parseTicketInfo content = case parse ticketInfo inputFile content of
                             (Right res) -> res
 
 inputFile :: FilePath 
-inputFile = "src/Day16/full-input.txt"
+inputFile = "src/Day16/short-input2.txt"
+
+---- possible labels
+
+labelsForCol :: TicketInfo -> [String]
+labelsForCol (TicketInfo labelInfo values) = 
+  let possible :: [[[String]]]
+      possible = possibleLabels labelInfo values
+
+      reduced :: [[String]]
+      reduced = foldr labelIntersection (head possible) (tail possible)
+   in map head (trace ("reduced: " ++ show reduced) reduced)
+  where  
+    labelIntersection :: [[String]] -> [[String]] -> [[String]]
+    labelIntersection = zipWith intersect
+
+possibleLabels :: [TicketLabel] -> [TicketValues] -> [[[String]]]
+possibleLabels labels = (map . map) possible 
+  where 
+    possible :: Int -> [String]
+    possible value = map ticketLabelLabel $ filter (`validForLabel` value) labels
 
 ---- find invalid
+
+filterValidTickets :: TicketInfo -> TicketInfo 
+filterValidTickets (TicketInfo labelInfo values) = 
+  TicketInfo labelInfo $ filter valuesValid values
+  where 
+    valuesValid :: TicketValues -> Bool
+    valuesValid = all (\val -> any (`validForLabel` val) labelInfo)
 
 findInvalidValues :: TicketInfo -> [Int]
 findInvalidValues ticketInfo = filter (not . validValue ticketInfo) (ticketValues' ticketInfo)
 
 validValue :: TicketInfo -> Int -> Bool
-validValue (TicketInfo labels _) value = any validForLabel labels
-  where 
-    validForLabel :: TicketLabel -> Bool
-    validForLabel (TicketLabel _ l1 h1 l2 h2) = (value >= l1 && value <= h1) 
-                                                  || (value >= l2 && value <= h2)
+validValue (TicketInfo labels _) value = any (`validForLabel` value) labels
+
+validForLabel :: TicketLabel -> Int -> Bool
+validForLabel (TicketLabel _ l1 h1 l2 h2) value
+  = (value >= l1 && value <= h1) || (value >= l2 && value <= h2)
 
 ticketValues' :: TicketInfo -> [Int]
 ticketValues' (TicketInfo _ values) = concat values
@@ -72,6 +104,9 @@ data TicketInfo = TicketInfo [TicketLabel] [TicketValues]
 data TicketLabel = TicketLabel String Int Int Int Int
 type TicketValues = [Int]
 
+ticketLabelLabel :: TicketLabel -> String 
+ticketLabelLabel (TicketLabel l _ _ _ _) = l
+
 makeTicketLabel :: String -> (Int, Int) -> (Int, Int) -> TicketLabel
 makeTicketLabel label (l1, h1) (l2, h2) = TicketLabel label l1 h1 l2 h2
 
@@ -85,7 +120,6 @@ instance Show TicketInfo where
         ++ "\n"
         ++ "nearby tickets:\n"
         ++ unlines (map showTicketValues (take 3 nearbyTickets))
-        ++ "..."
 
 showTicketValues :: TicketValues -> String
 showTicketValues = intercalate "," . map show
