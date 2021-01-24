@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9d9816f8c599b7a51ba4648bb01866df1cf26aaaadc325f2490cb56c7435b919
+-- hash: 40ab6d3fdda5cb399b245e2e450fe7004be8f8dc95175227dc43ab24992bb8d6
 
 name:           advent-of-code-y2020-haskell
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Day1.Soln
+      Day16.Soln
       Day17.Soln
       Day9.Soln
       Lib
@@ -42,6 +43,7 @@ library
     , base >=4.7 && <5
     , containers
     , deque
+    , megaparsec
     , sort
     , text
   default-language: Haskell2010

@@ -30,6 +30,7 @@ library:
   - containers
   - sort
   - deque
+  - megaparsec
 
 executables:
   aoc:
