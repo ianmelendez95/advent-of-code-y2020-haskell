@@ -29,6 +29,7 @@ library:
   - text
   - containers
   - sort
+  - deque
 
 executables:
   aoc:

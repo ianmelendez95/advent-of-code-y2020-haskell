@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3ae843df6ba87fa21610da826ff3b28661c6c22ce7466aea0d963aaa5a757aa5
+-- hash: 9d9816f8c599b7a51ba4648bb01866df1cf26aaaadc325f2490cb56c7435b919
 
 name:           advent-of-code-y2020-haskell
 version:        0.1.0.0
@@ -41,6 +41,7 @@ library
       array
     , base >=4.7 && <5
     , containers
+    , deque
     , sort
     , text
   default-language: Haskell2010
