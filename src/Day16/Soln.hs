@@ -55,8 +55,6 @@ type TicketValues = [Int]
 makeTicketLabel :: String -> (Int, Int) -> (Int, Int) -> TicketLabel
 makeTicketLabel label (l1, h1) (l2, h2) = TicketLabel label l1 h1 l2 h2
 
--- show
-
 instance Show TicketInfo where
   show (TicketInfo labels []) = unlines (map show labels)
   show (TicketInfo labels (yourTicket : nearbyTickets)) 
@@ -76,16 +74,20 @@ instance Show TicketLabel where
                                                ++ show l1 ++ "-" ++ show h1 ++ " "
                                                ++ show l2 ++ "-" ++ show h2
 
+-- parsers
+
 ticketInfo :: Parser TicketInfo
-ticketInfo = do labels <- many (fieldLine <* newline)
-                newline
-                string "your ticket:" *> newline
-                yourTicket <- ticketValues <* newline
-                newline 
-                string "nearby tickets:"
-                nearbyTickets <- some (newline *> ticketValues)
-                eof
-                return $ TicketInfo labels (yourTicket : nearbyTickets)
+ticketInfo = TicketInfo <$> labels 
+                        <*> ((:) <$> yourTicket <*> nearbyTickets)
+  where 
+    labels = many (fieldLine <* newline)
+
+    yourTicket = newline *> string "your ticket:" *> newline 
+                         *> ticketValues
+
+    nearbyTickets = newline *> newline 
+                            *> string "nearby tickets:" *> newline 
+                            *> some (ticketValues <* (newline $> () <|> eof))
 
 ticketValues :: Parser TicketValues
 ticketValues = (:) <$> L.decimal <*> some (char ',' *> L.decimal)
