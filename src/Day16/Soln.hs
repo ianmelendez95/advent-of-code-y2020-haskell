@@ -17,7 +17,12 @@ import Data.Char
 
 type Parser = Parsec Void Text
 
--- input
+---- soln
+
+soln16 :: IO Int 
+soln16 = sum . findInvalidValues <$> readTicketInfo
+
+---- input
 
 readTicketInfo :: IO TicketInfo
 readTicketInfo = parseTicketInfo <$> TIO.readFile inputFile
@@ -28,9 +33,24 @@ parseTicketInfo content = case parse ticketInfo inputFile content of
                             (Right res) -> res
 
 inputFile :: FilePath 
-inputFile = "src/Day16/short-input.txt"
+inputFile = "src/Day16/full-input.txt"
 
--- megaparsec tutorials
+---- find invalid
+
+findInvalidValues :: TicketInfo -> [Int]
+findInvalidValues ticketInfo = filter (not . validValue ticketInfo) (ticketValues' ticketInfo)
+
+validValue :: TicketInfo -> Int -> Bool
+validValue (TicketInfo labels _) value = any validForLabel labels
+  where 
+    validForLabel :: TicketLabel -> Bool
+    validForLabel (TicketLabel _ l1 h1 l2 h2) = (value >= l1 && value <= h1) 
+                                                  || (value >= l2 && value <= h2)
+
+ticketValues' :: TicketInfo -> [Int]
+ticketValues' (TicketInfo _ values) = concat values
+
+---- megaparsec tutorials
 
 sc :: Parser ()
 sc = L.space space1 (L.skipLineComment "//") (L.skipBlockComment "/*" "*/")
@@ -44,7 +64,7 @@ symbol = L.symbol sc
 ticketList :: Parser (String, [String])
 ticketList = undefined
 
------ ticket parsing
+---- ticket parsing
 
 -- data types
 

@@ -5,7 +5,7 @@ module Day9.Soln where
 import qualified Data.Text as T
 import Data.Text.Read
 import qualified Data.Text.IO as TIO
-import Data.Either
+import Data.Either ()
 
 import qualified Data.Set as S
 
