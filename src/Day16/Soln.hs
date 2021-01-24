@@ -84,7 +84,8 @@ instance Show TicketInfo where
         ++ showTicketValues yourTicket ++ "\n"
         ++ "\n"
         ++ "nearby tickets:\n"
-        ++ unlines (map showTicketValues nearbyTickets)
+        ++ unlines (map showTicketValues (take 3 nearbyTickets))
+        ++ "..."
 
 showTicketValues :: TicketValues -> String
 showTicketValues = intercalate "," . map show
@@ -113,13 +114,13 @@ ticketValues :: Parser TicketValues
 ticketValues = (:) <$> L.decimal <*> some (char ',' *> L.decimal)
 
 fieldLine :: Parser TicketLabel
-fieldLine = makeTicketLabel <$> (T.unpack <$> fieldName) 
-                            <*> (space *> numberPair)
+fieldLine = makeTicketLabel <$> fieldName 
+                            <*> (char ':' *> space *> numberPair)
                             <*> (string " or " *> numberPair)
   where 
     numberPair :: Parser (Int, Int)
     numberPair = (,) <$> L.decimal 
                      <*> (char '-' *> L.decimal)
 
-fieldName :: Parser Text 
-fieldName = takeWhile1P (Just "field-name") isAlpha <* char ':' 
+    fieldName :: Parser String 
+    fieldName = (:) <$> letterChar <*> some (satisfy (/= ':')) 
