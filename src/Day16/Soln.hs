@@ -32,6 +32,8 @@ soln16 = do validTicketInfo <- filterValidTickets <$> readTicketInfo
             putStrLn "\nLengths"
             print (length identified)
             print (length (nub identified))
+            putStrLn "\nDeparture Sum"
+            print $ sumDeparture validTicketInfo
             return 0
 
 ---- input
@@ -46,6 +48,13 @@ parseTicketInfo content = case parse ticketInfo inputFile content of
 
 inputFile :: FilePath 
 inputFile = "src/Day16/full-input.txt"
+
+---- sum departure fields 
+
+sumDeparture :: TicketInfo -> Int 
+sumDeparture ticketInfo = let labels = identifyLabels (possibleLabels (filterValidTickets ticketInfo))
+                              labelledTicket = zip labels (myTicketValues ticketInfo)
+                           in sum . map snd . filter (("departure" `isPrefixOf`) . fst) $ labelledTicket
 
 ---- identify labels from possible
 
@@ -69,9 +78,6 @@ identifyLabels labels = let pass = map reduceLabels labels
                           else singletonVals
 
 ---- possible labels
-
-labelsForCol :: TicketInfo -> [String]
-labelsForCol (TicketInfo labelInfo values) = undefined
 
 possibleLabels :: TicketInfo -> [[String]]
 possibleLabels (TicketInfo labels values) = 
@@ -124,6 +130,9 @@ symbol = L.symbol sc
 data TicketInfo = TicketInfo [TicketLabel] [TicketValues]
 data TicketLabel = TicketLabel String Int Int Int Int
 type TicketValues = [Int]
+
+myTicketValues :: TicketInfo -> TicketValues
+myTicketValues (TicketInfo _ (v:_)) = v
 
 ticketLabelLabel :: TicketLabel -> String 
 ticketLabelLabel (TicketLabel l _ _ _ _) = l
