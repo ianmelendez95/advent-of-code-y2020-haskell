@@ -34,6 +34,8 @@ soln16 = do validTicketInfo <- filterValidTickets <$> readTicketInfo
             print (length (nub identified))
             putStrLn "\nDeparture Sum"
             print $ sumDeparture validTicketInfo
+            putStrLn "\nLabels Valid"
+            print $ validateLabels validTicketInfo identified
             return 0
 
 ---- input
@@ -48,6 +50,19 @@ parseTicketInfo content = case parse ticketInfo inputFile content of
 
 inputFile :: FilePath 
 inputFile = "src/Day16/full-input.txt"
+
+---- validate labels
+
+validateLabels :: TicketInfo -> [String] -> Bool
+validateLabels ticketInfo labelNames = all ticketValuesValid (ticketInfoValues ticketInfo)
+  where 
+    ticketValuesValid :: TicketValues -> Bool
+    ticketValuesValid values = and (zipWith validForLabel labelsFromNames values) 
+
+    labelsFromNames :: [TicketLabel]
+    labelsFromNames = map (\name -> head $ filter ((==name) . ticketLabelLabel) labels) labelNames
+
+    labels = ticketInfoLabels ticketInfo
 
 ---- sum departure fields 
 
@@ -133,6 +148,12 @@ type TicketValues = [Int]
 
 myTicketValues :: TicketInfo -> TicketValues
 myTicketValues (TicketInfo _ (v:_)) = v
+
+ticketInfoLabels :: TicketInfo -> [TicketLabel]
+ticketInfoLabels (TicketInfo ls _) = ls
+
+ticketInfoValues :: TicketInfo -> [TicketValues]
+ticketInfoValues (TicketInfo _ vs) = vs
 
 ticketLabelLabel :: TicketLabel -> String 
 ticketLabelLabel (TicketLabel l _ _ _ _) = l
