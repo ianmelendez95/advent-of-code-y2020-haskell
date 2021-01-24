@@ -23,9 +23,16 @@ type Parser = Parsec Void Text
 
 soln16 :: IO Int 
 soln16 = do validTicketInfo <- filterValidTickets <$> readTicketInfo
-            print $ labelsForCol validTicketInfo
+            let possible = possibleLabels validTicketInfo
+                identified = identifyLabels possible
+            putStrLn "\nPossible Labels"
+            print possible
+            putStrLn "\nIdentified"
+            print identified
+            putStrLn "\nLengths"
+            print (length identified)
+            print (length (nub identified))
             return 0
--- soln16 = sum . findInvalidValues <$> readTicketInfo
 
 ---- input
 
@@ -38,11 +45,28 @@ parseTicketInfo content = case parse ticketInfo inputFile content of
                             (Right res) -> res
 
 inputFile :: FilePath 
-inputFile = "src/Day16/short-input2.txt"
+inputFile = "src/Day16/full-input.txt"
 
 ---- identify labels from possible
 
+identifyLabels :: [[String]] -> [String]
+identifyLabels labels = let pass = map reduceLabels labels
+                         in if labelsComplete pass then map head pass else identifyLabels pass
+  where 
+    reduceLabels :: [String] -> [String]
+    reduceLabels labels = case length labels of 
+                            0 -> error "Empty labels"
+                            1 -> labels 
+                            _ -> labels \\ singletonSet
 
+    labelsComplete :: [[String]] -> Bool
+    labelsComplete = all ((== 1) . length)
+
+    singletonSet :: [String]
+    singletonSet = let singletonVals = map head $ filter ((==1) . length) labels
+                    in if length singletonVals /= length (nub singletonVals)
+                          then error "Repeated singletons"
+                          else singletonVals
 
 ---- possible labels
 
@@ -92,9 +116,6 @@ lexeme = L.lexeme sc
 
 symbol :: Text -> Parser Text
 symbol = L.symbol sc
-
-ticketList :: Parser (String, [String])
-ticketList = undefined
 
 ---- ticket parsing
 
