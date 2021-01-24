@@ -40,25 +40,25 @@ parseTicketInfo content = case parse ticketInfo inputFile content of
 inputFile :: FilePath 
 inputFile = "src/Day16/short-input2.txt"
 
+---- identify labels from possible
+
+
+
 ---- possible labels
 
 labelsForCol :: TicketInfo -> [String]
-labelsForCol (TicketInfo labelInfo values) = 
-  let possible :: [[[String]]]
-      possible = possibleLabels labelInfo values
+labelsForCol (TicketInfo labelInfo values) = undefined
 
-      reduced :: [[String]]
-      reduced = foldr labelIntersection (head possible) (tail possible)
-   in map head (trace ("reduced: " ++ show reduced) reduced)
-  where  
-    labelIntersection :: [[String]] -> [[String]] -> [[String]]
-    labelIntersection = zipWith intersect
-
-possibleLabels :: [TicketLabel] -> [TicketValues] -> [[[String]]]
-possibleLabels labels = (map . map) possible 
+possibleLabels :: TicketInfo -> [[String]]
+possibleLabels (TicketInfo labels values) = 
+  let possibleForValues = (map . map) possible values
+   in foldr labelIntersection (head possibleForValues) (tail possibleForValues)
   where 
     possible :: Int -> [String]
     possible value = map ticketLabelLabel $ filter (`validForLabel` value) labels
+
+    labelIntersection :: [[String]] -> [[String]] -> [[String]]
+    labelIntersection = zipWith intersect
 
 ---- find invalid
 
