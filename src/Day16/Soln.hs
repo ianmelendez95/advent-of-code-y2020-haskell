@@ -22,21 +22,7 @@ type Parser = Parsec Void Text
 ---- soln
 
 soln16 :: IO Int 
-soln16 = do validTicketInfo <- filterValidTickets <$> readTicketInfo
-            let possible = possibleLabels validTicketInfo
-                identified = identifyLabels possible
-            putStrLn "\nPossible Labels"
-            print possible
-            putStrLn "\nIdentified"
-            print identified
-            putStrLn "\nLengths"
-            print (length identified)
-            print (length (nub identified))
-            putStrLn "\nDeparture Sum"
-            print $ sumDeparture validTicketInfo
-            putStrLn "\nLabels Valid"
-            print $ validateLabels validTicketInfo identified
-            return 0
+soln16 = departureProduct <$> readTicketInfo
 
 ---- input
 
@@ -66,10 +52,10 @@ validateLabels ticketInfo labelNames = all ticketValuesValid (ticketInfoValues t
 
 ---- sum departure fields 
 
-sumDeparture :: TicketInfo -> Int 
-sumDeparture ticketInfo = let labels = identifyLabels (possibleLabels (filterValidTickets ticketInfo))
-                              labelledTicket = zip labels (myTicketValues ticketInfo)
-                           in sum . map snd . filter (("departure" `isPrefixOf`) . fst) $ labelledTicket
+departureProduct :: TicketInfo -> Int 
+departureProduct ticketInfo = let labels = identifyLabels (possibleLabels (filterValidTickets ticketInfo))
+                                  labelledTicket = zip labels (myTicketValues ticketInfo)
+                               in product . map snd . filter (("departure" `isPrefixOf`) . fst) $ labelledTicket
 
 ---- identify labels from possible
 
