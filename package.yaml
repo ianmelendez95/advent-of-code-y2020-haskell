@@ -31,6 +31,7 @@ library:
   - sort
   - deque
   - megaparsec
+  - parser-combinators
 
 executables:
   aoc:
