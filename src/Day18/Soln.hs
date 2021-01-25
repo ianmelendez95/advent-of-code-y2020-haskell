@@ -70,8 +70,7 @@ pExpr = makeExprParser pTerm operatorTable
 
 operatorTable :: [[Operator Parser Expr]]
 operatorTable = 
-  [[ binary "+" Sum
-   , binary "*" Product]]
+  [[ binary "+" Sum ], [binary "*" Product]]
 
 binary :: Text -> (Expr -> Expr -> Expr) -> Operator Parser Expr
 binary name f = InfixL (f <$ symbol name)
