@@ -24,7 +24,7 @@ type Parser = Parsec Void Text
 ---- soln
 
 soln18 :: IO Int 
-soln18 = undefined
+soln18 = sum . map reduce <$> parseExpressions 
 
 ---- input
 
@@ -37,16 +37,24 @@ parseExpressions = parseText <$> TIO.readFile inputFile
                           (Right res) -> res
 
 inputFile :: FilePath
-inputFile = "src/Day18/short-input.txt"
+inputFile = "src/Day18/full-input.txt"
 
----- parsing expressions: https://markkarpov.com/tutorial/megaparsec.html#parsing-expressions
+---- expressions
 
 data Expr 
-  = Var String 
-  | Int Int 
+  = Int Int 
   | Sum Expr Expr
   | Product Expr Expr
   deriving (Eq, Ord, Show)
+
+-- reduction
+
+reduce :: Expr -> Int
+reduce (Int x) = x
+reduce (Sum e e') = reduce e + reduce e'
+reduce (Product e e') = reduce e * reduce e'
+
+-- parsing expressions: https://markkarpov.com/tutorial/megaparsec.html#parsing-expressions
 
 testParser1 :: IO ()
 testParser1 = parseTest (pExpr <* eof) "1 * (2 + 3)"
@@ -85,16 +93,3 @@ lexeme = L.lexeme sc
 
 symbol :: Text -> Parser Text
 symbol = L.symbol sc
-
----- input
-
--- readTicketInfo :: IO TicketInfo
--- readTicketInfo = parseTicketInfo <$> TIO.readFile inputFile
-
--- parseTicketInfo :: Text -> TicketInfo
--- parseTicketInfo content = case parse ticketInfo inputFile content of 
---                             (Left err) -> error $ errorBundlePretty err
---                             (Right res) -> res
-
--- inputFile :: FilePath 
--- inputFile = "src/Day16/full-input.txt"
