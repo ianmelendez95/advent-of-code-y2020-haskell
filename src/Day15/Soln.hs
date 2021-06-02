@@ -8,18 +8,19 @@ import Control.Monad.State.Lazy
 -- Solution
 
 soln :: IO Int
-soln = evalNumState . soln' <$> readInput
+soln = iterNums _iters <$> readInput
 
-soln' :: [Int] -> NumState Int
-soln' [] = error "Ran out of input"
-soln' [x]    = pushNum x
-soln' (x:xs) = pushNum x >> soln' xs
+soln' :: Int -> IO Int
+soln' iters = iterNums iters <$> readInput
+
+_iters :: Int 
+_iters = 2020
 
 --------------------------------------------------------------------------------
 -- IO
 
 inputFile :: FilePath 
-inputFile = "src/Day15/short-input.txt"
+inputFile = "src/Day15/full-input.txt"
 
 readInput :: IO [Int]
 readInput = map read . readCSV <$> readFile inputFile
@@ -45,39 +46,21 @@ iterations = 2020
 -- NumState
 
 type NumToOccurence = Map.Map Int Int
-data NumEnv = NEnv {
-  nenvCurIdx :: Int, 
-  nenvNumToOcc :: NumToOccurence 
-}
 
-type NumState = State NumEnv
-
-data NumResult = NewNum
-               | RepeatNum Int
-
-evalNumState :: NumState a -> a
-evalNumState st = evalState st emptyContext
-
-getLastOccurence :: Int -> NumState (Maybe Int)
-getLastOccurence n = Map.lookup n <$> gets nenvNumToOcc
-
-pushOccurence :: Int -> NumState ()
-pushOccurence n = 
-  do idx <- getAndIncIndex
-     modify (\nenv -> nenv { nenvNumToOcc = Map.insert n idx $ nenvNumToOcc nenv })
+iterNums :: Int -> [Int] -> Int
+iterNums iters initial_nums = iterNums' iters ntocc last_n cur_iter
   where 
-    getAndIncIndex :: NumState Int
-    getAndIncIndex = 
-      do idx <- gets nenvCurIdx
-         modify (\nenv -> nenv { nenvCurIdx = idx + 1 })
-         pure idx
+    ntocc    = Map.fromList (zip initial_nums [1..])
+    last_n   = last initial_nums
+    cur_iter = length initial_nums + 1
 
-emptyContext :: NumEnv 
-emptyContext = NEnv 0 Map.empty
-
-pushNum :: Int -> NumState Int
-pushNum n = 
-  do last_occ <- fromMaybe n <$> getLastOccurence n
-     let next_val = n - last_occ
-     pushOccurence n
-     pure next_val
+iterNums' :: Int -> NumToOccurence -> Int -> Int -> Int
+iterNums' iters ntocc last_n cur_iter 
+  | cur_iter > iters = last_n
+  | otherwise = 
+      let last_per = 
+            maybe 0 ((cur_iter - 1) -) $ Map.lookup last_n ntocc
+       in iterNums' iters 
+                    (Map.insert last_n (cur_iter - 1) ntocc)
+                    last_per
+                    (cur_iter + 1)
