@@ -10,6 +10,7 @@ import qualified Text.Megaparsec.Char.Lexer as L
 
 import Data.Void
 import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Data.Functor
 
 import Data.List
@@ -33,6 +34,13 @@ instance Show Rule where
 
 --------------------------------------------------------------------------------
 -- Spec
+
+parseFullSpec :: FilePath -> IO FullSpec
+parseFullSpec file = 
+  do input <- TIO.readFile file
+     case parse fullSpec file input of
+       Left bundle -> error (errorBundlePretty bundle)
+       Right spec -> pure spec
 
 fullSpec :: Parser FullSpec
 fullSpec = 
