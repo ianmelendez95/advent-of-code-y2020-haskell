@@ -10,32 +10,67 @@ import qualified Text.Megaparsec.Char.Lexer as L
 
 import Data.Void
 import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Data.Functor
 
+import Data.List
 
 type Parser = Parsec Void T.Text
 
 
-data Decl = Decl {
-  declIndex :: Int,
-  declRule  :: Rule
-} deriving Show
+type FullSpec = ([Decl], [Message])
+
+type Decl = (Int, Rule)
+
+type Message = T.Text
 
 data Rule = RExact  Char
           | RAltSeq [[Int]]
-          deriving Show
+
+instance Show Rule where 
+  show (RExact c) = "\"" ++ [c] ++ "\""
+  show (RAltSeq seqs) = intercalate " | " (map (unwords . map show) seqs)
+
+
+--------------------------------------------------------------------------------
+-- Spec
+
+parseTestInput :: IO ()
+parseTestInput = 
+  do input <- TIO.readFile "src/Day19/short-input.txt"
+     case parse fullSpec "" input of
+       Left bundle -> putStr (errorBundlePretty bundle)
+       Right spec -> putStr (showFullSpec spec)
+
+fullSpec :: Parser FullSpec
+fullSpec = 
+  do decls <- some (declaration <* newline)
+     _ <- newline
+     msgs  <- some (message <* (newline $> () <|> eof))
+     pure (decls, msgs)
+
+showFullSpec :: FullSpec -> String
+showFullSpec (decls, msgs) = unlines (map showDecl decls ++ [""] ++ map T.unpack msgs)
+  where 
+    showDecl :: Decl -> String
+    showDecl (idx, rule) = show idx ++ ": " ++ show rule
+
+
+--------------------------------------------------------------------------------
+-- Message
+
+message :: Parser T.Text
+message = T.pack <$> some letterChar
 
 
 --------------------------------------------------------------------------------
 -- Declaration
 
-parseTestDecl :: String -> IO ()
-parseTestDecl = parseTest decl . T.pack
 
-decl :: Parser Decl
-decl = 
-  Decl <$> lexeme (L.decimal <* symbol ":")
-       <*> rule
+declaration :: Parser Decl
+declaration = 
+  (,) <$> lexeme (L.decimal <* symbol ":")
+      <*> rule
 
 
 --------------------------------------------------------------------------------
