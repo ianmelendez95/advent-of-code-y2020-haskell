@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.2.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b47e865cbb04bc7fddb00e0e767a9fd9210fcd83b4ade01d193ae19cbae684b4
+-- hash: d6996820890b94d02138ded4d6335e663cbbe6641245be20158616c39f3ca188
 
 name:           advent-of-code-y2020-haskell
 version:        0.1.0.0
@@ -32,6 +32,7 @@ library
       Day16.Soln
       Day17.Soln
       Day18.Soln
+      Day19.Soln
       Day9.Soln
       Lib
       Y2019.Day1.Soln
