@@ -1,8 +1,9 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Day15.Soln where 
 
 import Data.Maybe (fromMaybe)
-import qualified Data.IntMap.Lazy as IntMap
-import Control.Monad.State.Lazy
+import qualified Data.IntMap.Strict as IntMap
 
 --------------------------------------------------------------------------------
 -- Solution
@@ -56,7 +57,7 @@ iterNums iters initial_nums = iterNums' iters ntocc last_n cur_iter
     cur_iter = length initial_nums + 1
 
 iterNums' :: Int -> NumToOccurence -> Int -> Int -> Int
-iterNums' iters ntocc last_n cur_iter 
+iterNums' !iters ntocc !last_n !cur_iter 
   | cur_iter > iters = last_n
   | otherwise = 
       let last_per = 
